@@ -1,5 +1,6 @@
 import { GetServerSidePropsContext, GetStaticPropsContext } from 'next';
 import type { DocumentNode } from 'graphql';
+import isFunction from 'lodash/isFunction.js';
 import { SeedNode, SEED_QUERY } from './queries/seedQuery.js';
 import { getTemplate } from './getTemplate.js';
 import { addApolloState, getApolloClient } from './client.js';
@@ -13,7 +14,10 @@ function isSSR(
 }
 
 export interface WordPressTemplate {
-  query: DocumentNode;
+  query:
+    | DocumentNode
+    | ((seedNode: SeedNode) => DocumentNode)
+    | ((seedNode: SeedNode) => Promise<DocumentNode>);
   variables: (seedNode: SeedNode) => { [key: string]: any };
   Component: React.FC<{ [key: string]: any }>;
 }
@@ -79,7 +83,9 @@ export async function getWordPressProps(options: GetWordPressPropsConfig) {
 
   if (template.query) {
     await client.query({
-      query: template.query,
+      query: isFunction(template.query)
+        ? await template.query(seedNode)
+        : template.query,
       variables: template?.variables ? template.variables(seedNode) : undefined,
     });
   }
