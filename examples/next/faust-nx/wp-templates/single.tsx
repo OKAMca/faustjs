@@ -3,10 +3,6 @@ import { SeedNode } from 'faust-nx/dist/cjs/queries/seedQuery';
 import { getEnvironmentData } from 'worker_threads';
 
 const Component = (props: any) => {
-  if (props.loading) {
-    return <>Loading...</>;
-  }
-
   const { title, content } = props.data.post;
 
   return (
