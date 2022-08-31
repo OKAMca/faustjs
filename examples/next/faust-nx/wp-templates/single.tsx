@@ -1,6 +1,12 @@
 import { gql } from '@apollo/client';
+import { SeedNode } from 'faust-nx/dist/cjs/queries/seedQuery';
+import { getEnvironmentData } from 'worker_threads';
 
 const Component = (props: any) => {
+  if (props.loading) {
+    return <>Loading...</>;
+  }
+
   const { title, content } = props.data.post;
 
   return (
@@ -11,14 +17,16 @@ const Component = (props: any) => {
   );
 };
 
-const query = gql`
-  query GetPost($uri: ID!) {
-    post(id: $uri, idType: URI) {
-      title
-      content
+const query = async (seedNode: SeedNode) => {
+  return gql`
+    query GetPost($uri: ID!) {
+      post(id: $uri, idType: URI) {
+        title
+        content
+      }
     }
-  }
-`;
+  `;
+};
 
 const variables = (seedQuery: any) => {
   console.log(seedQuery);

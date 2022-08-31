@@ -1,4 +1,5 @@
 import { GetServerSidePropsContext, GetStaticPropsContext } from 'next';
+import { print } from 'graphql';
 import type { DocumentNode } from 'graphql';
 import isFunction from 'lodash/isFunction.js';
 import { SeedNode, SEED_QUERY } from './queries/seedQuery.js';
@@ -81,11 +82,13 @@ export async function getWordPressProps(options: GetWordPressPropsConfig) {
     };
   }
 
+  const templateQuery = isFunction(template.query)
+    ? await template.query(seedNode)
+    : template.query;
+
   if (template.query) {
     await client.query({
-      query: isFunction(template.query)
-        ? await template.query(seedNode)
-        : template.query,
+      query: templateQuery,
       variables: template?.variables ? template.variables(seedNode) : undefined,
     });
   }
@@ -94,6 +97,14 @@ export async function getWordPressProps(options: GetWordPressPropsConfig) {
   return addApolloState(client, {
     props: {
       __SEED_NODE__: seedNode,
+      /**
+       * Although the template query is accessible from the client, it must be
+       * awaited which can cause loading states on the client for data that
+       * has already been fetched and cached. We set the template query as a
+       * string so we can immediately get the cached results via useQuery on the
+       * client.
+       */
+      __TEMPLATE_QUERY_STRING__: print(templateQuery),
     },
   });
 }
