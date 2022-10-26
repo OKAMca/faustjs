@@ -13,6 +13,8 @@ import {
 import { RouterContext } from 'next/dist/shared/lib/router-context.js';
 
 import React, { FunctionComponent, ComponentClass } from 'react';
+import { I18nProvider } from '@react-aria/i18n';
+import { SSRProvider } from '@react-aria/ssr';
 import { config } from '../config/config.js';
 import { getClient, FaustContext } from '../gqty/client.js';
 
@@ -80,11 +82,11 @@ export async function getProps<
           <RouterContext.Provider
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             value={{ query: { ...context.params } } as any}>
-            <FaustContext.Provider value={{ client }}>
+            <SSRProvider><I18nProvider locale={context?.locale || 'en-CA'}><FaustContext.Provider value={{ client }}>
               {/* eslint-disable-next-line react/jsx-props-no-spreading */}
               <Page {...(props as Props)} />
             </FaustContext.Provider>
-          </RouterContext.Provider>,
+          </I18nProvider></SSRProvider></RouterContext.Provider>,
         );
 
         cacheSnapshot = coreSnapshot;
